@@ -1,6 +1,5 @@
 // ignore_for_file: file_names, avoid_print
 
-import 'package:flutter03/Widget/buildMenuTile.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter03/pages/auth_page.dart/loginPage.dart';

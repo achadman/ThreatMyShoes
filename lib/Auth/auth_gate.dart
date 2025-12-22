@@ -6,6 +6,7 @@ authenticated => Profile page
 */
 
 import 'package:flutter/material.dart';
+import 'package:flutter03/Widget/main_screen.dart';
 import 'package:flutter03/pages/auth_page.dart/loginPage.dart';
 import 'package:flutter03/pages/profilePage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,7 +32,7 @@ class AuthGate extends StatelessWidget {
         final session = snapshot.hasData ? snapshot.data!.session : null;
 
         if (session != null) {
-          return const ProfilePage();
+          return const MainScreen();
         } else {
           return const LoginPage();
         }

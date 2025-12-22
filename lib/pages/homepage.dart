@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class Berandapage extends StatefulWidget {
+  const Berandapage({super.key});
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Berandapage> createState() => _BerandaState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _BerandaState extends State<Berandapage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,8 +14,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: .center,
           children: [
-          Text('This is the login project:'),
-          TextFormField(), ]
+          Text('Ini Halmaan Beranda'),
+          ]
         ),
       ),
     );
