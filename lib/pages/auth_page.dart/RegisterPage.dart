@@ -64,32 +64,11 @@ class _RegisterPageState extends State<RegisterPage> {
     const Color primaryPurple = Color(0xFF004030);
     const Color primaryPurple2 = Color(0xFF778873);
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 15),
-          child: Container(
-            decoration: BoxDecoration(
-              color: primaryPurple2,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new_sharp,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        ),
-      ),
+      
       body: Stack(
         children: [
           Positioned(
-            bottom: -150,
+            top: -150,
             left: -150,
             child: Container(
               width: 300,
@@ -104,7 +83,8 @@ class _RegisterPageState extends State<RegisterPage> {
           ListView(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             children: [
-              SizedBox(child: Image.asset("logo/logo02.png", width: 300)),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+              SizedBox(child: Image.asset("assets/logo/logo02.png", width: 300)),
               SizedBox(height: MediaQuery.of(context).size.height * 0.15),
               //Teks
               const Text(
