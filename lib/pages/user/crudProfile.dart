@@ -1,8 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter03/pages/profilePage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -134,10 +132,8 @@ class _CrudprofileState extends State<Crudprofile> {
       appBar: AppBar(
         title: const Text("Edit Profil"),
         actions: [
-          // Tombol simpan di pojok kanan atas
           IconButton(
             onPressed: _updateProfile,
-            // Fungsi ini kita buat di langkah berikutnya
             icon: const Icon(Icons.save),
           ),
         ],

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names, avoid_print
 
+import 'package:flutter03/Widget/buildMenuTile.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter03/pages/auth_page.dart/loginPage.dart';
@@ -68,63 +69,82 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Profile")),
-      body: Center(
+  backgroundColor: Colors.white,
+  body: Column(
+    children: [
+      // 1. HEADER HIJAU (Tanpa Stack yang rumit)
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.only(top: 60, bottom: 30),
+        decoration: const BoxDecoration(
+          color: Color(0xFF2D5A43),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            const Text("Profile", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
+            // FOTO PROFIL
             CircleAvatar(
               radius: 50,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                  ? NetworkImage(_avatarUrl!)
-                  : null,
-              onBackgroundImageError:
-                  (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                  ? (exception, stackTrace) {
-                      print("Gambar gagal dimuat: $exception");
-                    }
-                  : null,
-              child: (_avatarUrl == null || _avatarUrl!.isEmpty)
-                  ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                  : null,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 47,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                    ? NetworkImage(_avatarUrl!)
+                    : null,
+                child: (_avatarUrl == null || _avatarUrl!.isEmpty)
+                    ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                    : null,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
+            // NAMA
             Text(
               _userName ?? "Nama Pengguna",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: signOut,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 15,
-                ),
-              ),
-              child: const Text(
-                "Log out",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Crudprofile()),
-                ).then((value) {
-                  _getProfileData();
-                });
-              },
-              child: const Text("Edit Profil"),
+              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
         ),
       ),
-    );
+
+      const SizedBox(height: 20),
+
+      // 2. DAFTAR MENU (Menggunakan ListTile Standar)
+      Expanded(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text("Edit Profil"),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Crudprofile()),
+                ).then((value) => _getProfileData());
+              },
+            ),
+            const Divider(), // Garis pemisah
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text("Riwayat Pesanan"),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {},
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text("Log Out", style: TextStyle(color: Colors.red)),
+              onTap: signOut,
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+);
   }
 }
