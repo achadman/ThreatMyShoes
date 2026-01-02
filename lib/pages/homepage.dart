@@ -13,9 +13,7 @@ class _BerandaState extends State<Berandapage> {
       body: Center(
         child: Column(
           mainAxisAlignment: .center,
-          children: [
-          Text('Ini Halmaan Beranda'),
-          ]
+          children: [Text('Ini Halmaan Beranda')],
         ),
       ),
     );

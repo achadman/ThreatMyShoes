@@ -128,6 +128,7 @@ class _CrudprofileState extends State<Crudprofile> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryPurple = Color(0xFF4A7F91);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Profil"),
@@ -135,6 +136,7 @@ class _CrudprofileState extends State<Crudprofile> {
           IconButton(
             onPressed: _updateProfile,
             icon: const Icon(Icons.save),
+            color: primaryPurple,
           ),
         ],
       ),
@@ -162,7 +164,7 @@ class _CrudprofileState extends State<Crudprofile> {
                         bottom: 0,
                         right: 0,
                         child: CircleAvatar(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: primaryPurple,
                           radius: 18,
                           child: IconButton(
                             icon: const Icon(
@@ -209,6 +211,13 @@ class _CrudprofileState extends State<Crudprofile> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.location_on),
                   ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                SizedBox(
+                  child: ElevatedButton(
+                    onPressed: () {
+                    _updateProfile;
+                  }, child: Text("Simpan Perubahan" , style: TextStyle(color: primaryPurple),)),
                 ),
               ],
             ),

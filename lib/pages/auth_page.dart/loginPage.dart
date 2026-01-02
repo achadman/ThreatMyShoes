@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryPurple = Color(0xFF004030);
+    const Color primaryPurple = Color(0xFF4A7F91);
     const Color primaryPurple2 = Color(0xFF778873);
 
     return Scaffold(
@@ -65,8 +65,15 @@ class _LoginPageState extends State<LoginPage> {
           ListView(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.25),
-
+              SizedBox(height: MediaQuery.of(context).size.height * 0.10),
+              SizedBox(
+                child: Image.asset(
+                  "assets/logo/logoTreatMyshoes.png",
+                  width: 100,
+                  height: 100,
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
               // 1. Login Teks
               const Text(
                 'Login',
@@ -159,7 +166,6 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     login();
                   },
-                  icon: const Icon(Icons.arrow_forward, color: Colors.white),
                   label: const Text(
                     'Login',
                     style: TextStyle(fontSize: 18, color: Colors.white),

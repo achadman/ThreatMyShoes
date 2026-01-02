@@ -61,10 +61,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryPurple = Color(0xFF004030);
+    const Color primaryPurple = Color(0xFF4A7F91);
     const Color primaryPurple2 = Color(0xFF778873);
     return Scaffold(
-      
       body: Stack(
         children: [
           Positioned(
@@ -83,9 +82,15 @@ class _RegisterPageState extends State<RegisterPage> {
           ListView(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.10),
+              SizedBox(
+                child: Image.asset(
+                  "assets/logo/logoTreatMyshoes.png",
+                  width: 100,
+                  height: 100,
+                ),
+              ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-              SizedBox(child: Image.asset("assets/logo/logo02.png", width: 300)),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.15),
               //Teks
               const Text(
                 'Sign Up',
