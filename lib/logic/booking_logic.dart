@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import '../models/treatment_model.dart';
 
 class BookingLogic {
   // Rumus hitung Biaya Express

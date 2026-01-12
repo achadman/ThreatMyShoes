@@ -213,12 +213,7 @@ class _CrudprofileState extends State<Crudprofile> {
                   ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                SizedBox(
-                  child: ElevatedButton(
-                    onPressed: () {
-                    _updateProfile;
-                  }, child: Text("Simpan Perubahan" , style: TextStyle(color: primaryPurple),)),
-                ),
+                
               ],
             ),
     );

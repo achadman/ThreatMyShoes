@@ -1,6 +1,7 @@
 // ignore_for_file: file_names, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter03/pages/Pesanan/history_pages.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter03/pages/auth_page.dart/loginPage.dart';
 import 'package:flutter03/pages/user/crudProfile.dart';
@@ -69,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primary = Color(0xFF4A7F91);
+        const Color primary = Color(0xFF18ADFF);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -102,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 10),
                 // NAMA
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
@@ -113,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         fontWeight: FontWeight.normal,
                       ),
                     ),
-                    SizedBox(width: 12,),
+                    SizedBox(width: 12),
                     Text(
                       _phoneNumber ?? "62+",
                       style: const TextStyle(
@@ -155,7 +156,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   leading: const Icon(Icons.history),
                   title: const Text("Riwayat Pesanan"),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HistoryPages()),
+                    );
+                  },
                 ),
                 const Divider(),
                 ListTile(

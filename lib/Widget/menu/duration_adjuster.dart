@@ -27,7 +27,12 @@ class DurationAdjuster extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 15),
+        const Text(
+          "Waktu Pengerjaan",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+
+        const SizedBox(height: 10),
         Card(
           color: Colors.orange.shade50,
           child: Padding(
@@ -40,17 +45,21 @@ class DurationAdjuster extends StatelessWidget {
                     const Text("Durasi Pengerjaan:"),
                     Row(
                       children: [
-                        IconButton(
+                        IconButton.outlined(
                           onPressed: activeDuration > 1 ? onRemove : null,
-                          icon: const Icon(Icons.remove_circle_outline),
+                          icon: const Icon(Icons.remove),
+                          iconSize: 24,
                         ),
                         Text(
                           "$activeDuration Hari",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        IconButton(
-                          onPressed: activeDuration < selectedTreatment.baseDays ? onAdd : null,
-                          icon: const Icon(Icons.add_circle_outline),
+                        IconButton.outlined(
+                          onPressed: activeDuration < selectedTreatment.baseDays
+                              ? onAdd
+                              : null,
+                          icon: const Icon(Icons.add),
+                          iconSize: 24,
                         ),
                       ],
                     ),

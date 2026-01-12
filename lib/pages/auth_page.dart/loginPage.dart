@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryPurple = Color(0xFF4A7F91);
+    const Color primaryPurple = Color(0xFF18ADFF);
     const Color primaryPurple2 = Color(0xFF778873);
 
     return Scaffold(
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: MediaQuery.of(context).size.height * 0.10),
               SizedBox(
                 child: Image.asset(
-                  "assets/logo/logoTreatMyshoes.png",
+                  "assets/logo/Logo.png",
                   width: 100,
                   height: 100,
                 ),
