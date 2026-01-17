@@ -73,7 +73,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
         leading: Padding(
           padding: const EdgeInsets.only(left: 20),
-          child: Image.asset("assets/logo/logo-1.png", fit: BoxFit.fitWidth),
+          child: Image.asset("assets/logo/logo2.png", fit: BoxFit.fitWidth),
         ),
         leadingWidth: 50,
       ),

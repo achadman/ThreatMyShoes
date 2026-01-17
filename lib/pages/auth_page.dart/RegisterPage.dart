@@ -21,51 +21,81 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
 
   //Ketika menekan tombol sign up
+  // Tambahkan variabel ini di dalam _RegisterPageState
+  bool _isLoading = false;
+  // Tambahkan di bagian atas kelas state
+  bool _isObscured = true;
+  bool _isConfirmObscured = true;
   void signUp() async {
-    // Siapkan data
-    final email = _emailController.text;
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    // 1. Pengecekan KEKOSONGAN (Disarankan di awal)
+    // 1. Validasi Input
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Konten Tidak Boleh Kosong")),
-      );
+      _showSnackBar("Semua kolom wajib diisi!", isError: true);
       return;
     }
 
-    // 2. Pengecekan Kecocokan Password
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Password Tidak Sama ")));
+      _showSnackBar("Password dan konfirmasi tidak cocok.", isError: true);
       return;
     }
 
-    // 3. Mencoba untuk mendaftar
+    if (password.length < 6) {
+      _showSnackBar("Password minimal harus 6 karakter.", isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
     try {
+      // 2. Proses Pendaftaran
       await authService.signUpWithEmailPassword(email, password);
 
-      // 4. Tutup halaman ketika selesai
-      Navigator.pop(context);
-    } catch (e) {
-      // 5. Penanganan Error Saat Sign Up
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+        _showSnackBar("Pendaftaran berhasil! Silakan login.");
+        Navigator.pop(context);
       }
+    } catch (e) {
+      // 3. Terjemahkan Error
+      String errorMessage = "Gagal mendaftar. Silakan coba lagi.";
+      String errorStr = e.toString().toLowerCase();
+
+      if (errorStr.contains("user already exists")) {
+        errorMessage = "Email ini sudah terdaftar. Gunakan email lain.";
+      } else if (errorStr.contains("network") || errorStr.contains("socket")) {
+        errorMessage = "Koneksi internet bermasalah.";
+      } else if (errorStr.contains("invalid-email")) {
+        errorMessage = "Format email tidak valid.";
+      }
+
+      if (mounted) {
+        _showSnackBar(errorMessage, isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // Fungsi Helper SnackBar yang rapi
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.redAccent : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryPurple = Color(0xFF18ADFF);
+    const Color primaryPurple = Color(0xFF24465F);
     const Color primaryPurple2 = Color(0xFF778873);
     return Scaffold(
       body: Stack(
-        
         children: [
           Positioned(
             top: -150,
@@ -86,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
               SizedBox(height: MediaQuery.of(context).size.height * 0.10),
               SizedBox(
                 child: Image.asset(
-                  "assets/logo/Logo.png",
+                  "assets/logo/treatmyshoes.png",
                   width: 100,
                   height: 100,
                 ),
@@ -155,6 +185,17 @@ class _RegisterPageState extends State<RegisterPage> {
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   labelText: 'Password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isObscured ? Icons.visibility_off : Icons.visibility,
+                      color: const Color(0xFF778873),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscured = !_isObscured;
+                      });
+                    },
+                  ),
                   labelStyle: TextStyle(color: primaryPurple2),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -177,6 +218,19 @@ class _RegisterPageState extends State<RegisterPage> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Konfirmasi Password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isConfirmObscured
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: const Color(0xFF778873),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isConfirmObscured = !_isConfirmObscured;
+                      });
+                    },
+                  ),
                   labelStyle: TextStyle(color: primaryPurple2),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -195,14 +249,11 @@ class _RegisterPageState extends State<RegisterPage> {
               SizedBox(height: 12),
 
               // Tombol Sign Up
-              ElevatedButton.icon(
-                onPressed: () {
-                  signUp();
-                },
-                label: const Text(
-                  'Sign Up',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
+              // Ganti ElevatedButton lama dengan ini:
+              ElevatedButton(
+                onPressed: _isLoading
+                    ? null
+                    : signUp, // Disable tombol saat loading
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryPurple,
                   padding: const EdgeInsets.symmetric(vertical: 20),
@@ -210,6 +261,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Sign Up',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
               ),
             ],
           ),
