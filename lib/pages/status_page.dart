@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StatusPage extends StatefulWidget {
-  const StatusPage({super.key, required String orderId, required String status});
+  const StatusPage({
+    super.key,
+    required String orderId,
+    required String status,
+  });
 
   @override
   State<StatusPage> createState() => _StatusPageState();
@@ -11,7 +15,6 @@ class StatusPage extends StatefulWidget {
 class _StatusPageState extends State<StatusPage> {
   final supabase = Supabase.instance.client;
 
-  // Stream untuk mengambil pesanan yang BELUM "arrived"
   Stream<List<Map<String, dynamic>>> _getActiveOrderStream() {
     final userId = supabase.auth.currentUser?.id;
 
@@ -19,8 +22,6 @@ class _StatusPageState extends State<StatusPage> {
         .from('orders')
         .stream(primaryKey: ['id'])
         .eq('user_id', userId ?? '')
-        // .neq tidak ada di sini, jadi kita ambil semua dulu
-        // lalu kita filter di tingkat widget agar lebih aman.
         .map(
           (items) =>
               items.where((item) => item['status'] != 'arrived').toList(),
@@ -46,15 +47,31 @@ class _StatusPageState extends State<StatusPage> {
         .update({'status': 'arrived'})
         .eq('id', orderId);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Pesanan Selesai! Terima kasih.")),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Pesanan Selesai! Terima kasih."),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryBlue = Color(0xFF18ADFF);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Status Pesanan Aktif")),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: const Text(
+          "Status Pesanan",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _getActiveOrderStream(),
         builder: (context, snapshot) {
@@ -62,55 +79,55 @@ class _StatusPageState extends State<StatusPage> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // JIKA TIDAK ADA PESANAN AKTIF (KOSONG)
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.assignment_turned_in_outlined,
-                    size: 80,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Tidak ada pesanan yang sedang diproses",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                  ),
-                ],
-              ),
-            );
+            return _buildEmptyState();
           }
 
           final order = snapshot.data!.first;
           final String status = order['status'] ?? "pending";
           final currentStep = _getCurrentStep(status);
 
-          return Padding(
-            padding: const EdgeInsets.all(16),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(order['id'], order['treatment_name']),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: ListView(
+                _buildIllustrationHeader(status, primaryBlue),
+                const SizedBox(height: 25),
+                _buildOrderDetails(order),
+                const SizedBox(height: 25),
+
+                // TIMELINE
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 15,
+                      ),
+                    ],
+                  ),
+                  child: Column(
                     children: [
-                      _stepItem(
-                        "Menunggu Konfirmasi",
-                        Icons.receipt_long,
+                      _buildStepItem(
+                        "Konfirmasi Pesanan",
+                        "Admin sedang memproses pesanan",
+                        Icons.fact_check,
                         0,
                         currentStep,
                       ),
-                      _stepItem(
-                        "Proses Cuci",
-                        Icons.local_laundry_service,
+                      _buildStepItem(
+                        "Dalam Perawatan",
+                        "Sepatu sedang dicuci oleh tim",
+                        Icons.waves,
                         1,
                         currentStep,
                       ),
-                      _stepItem(
-                        "Sedang Dikirim",
+                      _buildStepItem(
+                        "Siap Dikirim",
+                        "Sepatu bersih menuju lokasimu",
                         Icons.local_shipping,
                         2,
                         currentStep,
@@ -119,31 +136,9 @@ class _StatusPageState extends State<StatusPage> {
                   ),
                 ),
 
-                // TOMBOL SELESAI: Muncul hanya jika status sudah 'shipped'
-                if (status == 'shipped')
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () => _completeOrder(order['id']),
-                        child: const Text(
-                          "Selesaikan Pesanan & Terima Barang",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 30),
+
+                if (status == 'shipped') _buildCompleteButton(order['id']),
               ],
             ),
           );
@@ -152,28 +147,98 @@ class _StatusPageState extends State<StatusPage> {
     );
   }
 
-  Widget _buildHeader(String id, String? name) {
+  // EMPTY STATE
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.shopping_bag_outlined, size: 100, color: Colors.grey[300]),
+          const SizedBox(height: 20),
+          const Text(
+            "Tidak Ada Pesanan Aktif",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
+          ),
+          const Text(
+            "Semua sepatumu sudah kembali bersih!",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // HEADER STATUS
+  Widget _buildIllustrationHeader(String status, Color primary) {
+    IconData icon = Icons.query_builder;
+    String message = "Menunggu Konfirmasi";
+
+    if (status == 'processed') {
+      icon = Icons.opacity;
+      message = "Sedang Dicuci";
+    } else if (status == 'shipped') {
+      icon = Icons.local_shipping_outlined;
+      message = "Sedang Dikirim";
+    }
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 30),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue[200]!),
+        color: primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 80, color: primary),
+          const SizedBox(height: 15),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // DETAIL PESANAN
+  Widget _buildOrderDetails(Map<String, dynamic> order) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: Colors.blue),
-          const SizedBox(width: 12),
+          const Icon(Icons.qr_code_2, color: Colors.white70, size: 40),
+          const SizedBox(width: 15),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "ID: ${id.substring(0, 8)}...",
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                "ORDER ID: #${order['id'].toString().substring(0, 8).toUpperCase()}",
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
-                name ?? "Layanan Laundry",
-                style: const TextStyle(fontSize: 14),
+                order['treatment_name'] ?? "Treatment Sepatu",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -182,30 +247,44 @@ class _StatusPageState extends State<StatusPage> {
     );
   }
 
-  Widget _stepItem(String title, IconData icon, int index, int currentStep) {
-    final isActive = index <= currentStep;
-    final isLast = index == 2;
+  // STEP ITEM
+  Widget _buildStepItem(
+    String title,
+    String desc,
+    IconData icon,
+    int index,
+    int currentStep,
+  ) {
+    bool isCompleted = index < currentStep;
+    bool isActive = index == currentStep;
+    Color color = isCompleted || isActive
+        ? const Color(0xFF18ADFF)
+        : Colors.grey[300]!;
 
     return IntrinsicHeight(
       child: Row(
         children: [
           Column(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: isActive ? Colors.green : Colors.grey[300],
-                child: Icon(icon, color: Colors.white, size: 18),
-              ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    color: isActive ? Colors.green : Colors.grey[300],
-                  ),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isCompleted ? color : Colors.white,
+                  border: Border.all(color: color, width: 2),
+                  shape: BoxShape.circle,
                 ),
+                child: Icon(
+                  isCompleted ? Icons.check : icon,
+                  size: 16,
+                  color: isCompleted ? Colors.white : color,
+                ),
+              ),
+              if (index != 2)
+                Expanded(child: VerticalDivider(color: color, thickness: 2)),
             ],
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,21 +293,48 @@ class _StatusPageState extends State<StatusPage> {
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isActive ? Colors.black : Colors.grey,
+                    color: isActive || isCompleted ? Colors.black : Colors.grey,
                   ),
                 ),
                 Text(
-                  isActive ? "Sudah diproses" : "Menunggu giliran",
+                  desc,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isActive ? Colors.green : Colors.grey,
+                    color: isActive || isCompleted
+                        ? Colors.black54
+                        : Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 30),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // BUTTON SELESAI
+  Widget _buildCompleteButton(String orderId) {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        onPressed: () => _completeOrder(orderId),
+        child: const Text(
+          "Pesanan Saya Terima",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
   }
