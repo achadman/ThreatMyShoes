@@ -12,28 +12,40 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  //get auth service
+  // Get auth service
   final authService = AuthServices();
 
-  //text Controller
+  // Text Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  //Ketika menekan tombol sign up
-  // Tambahkan variabel ini di dalam _RegisterPageState
+  // State Variables
   bool _isLoading = false;
-  // Tambahkan di bagian atas kelas state
   bool _isObscured = true;
   bool _isConfirmObscured = true;
+
   void signUp() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    // 1. Validasi Input
+    // 1. Validasi Input Dasar
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       _showSnackBar("Semua kolom wajib diisi!", isError: true);
+      return;
+    }
+
+    // 2. Validasi Format Email (Regex)
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      _showSnackBar("Format email tidak valid!", isError: true);
+      return;
+    }
+
+    // 3. Validasi Password
+    if (password.length < 6) {
+      _showSnackBar("Password minimal harus 6 karakter.", isError: true);
       return;
     }
 
@@ -42,15 +54,10 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    if (password.length < 6) {
-      _showSnackBar("Password minimal harus 6 karakter.", isError: true);
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
-      // 2. Proses Pendaftaran
+      // 4. Proses Pendaftaran ke Service
       await authService.signUpWithEmailPassword(email, password);
 
       if (mounted) {
@@ -58,16 +65,22 @@ class _RegisterPageState extends State<RegisterPage> {
         Navigator.pop(context);
       }
     } catch (e) {
-      // 3. Terjemahkan Error
+      // PENTING: Print error ke console untuk debugging (F12 di browser)
+      debugPrint("DEBUG_AUTH_ERROR: $e");
+
+      // 5. Terjemahkan Error Berdasarkan Pesan dari Backend/Firebase
       String errorMessage = "Gagal mendaftar. Silakan coba lagi.";
       String errorStr = e.toString().toLowerCase();
 
-      if (errorStr.contains("user already exists")) {
+      if (errorStr.contains("already-in-use") ||
+          errorStr.contains("user already exists")) {
         errorMessage = "Email ini sudah terdaftar. Gunakan email lain.";
       } else if (errorStr.contains("network") || errorStr.contains("socket")) {
-        errorMessage = "Koneksi internet bermasalah.";
+        errorMessage = "Koneksi internet bermasalah atau CORS error.";
       } else if (errorStr.contains("invalid-email")) {
         errorMessage = "Format email tidak valid.";
+      } else if (errorStr.contains("weak-password")) {
+        errorMessage = "Password terlalu lemah.";
       }
 
       if (mounted) {
@@ -78,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  // Fungsi Helper SnackBar yang rapi
+  // Fungsi Helper SnackBar
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -86,25 +99,37 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: isError ? Colors.redAccent : Colors.green,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
   @override
+  void dispose() {
+    // Selalu dispose controller untuk menghindari memory leak
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    const Color primaryPurple = Color(0xFF24465F);
-    const Color primaryPurple2 = Color(0xFF778873);
+    const Color primaryBlue = Colors.blue;
+    const Color primaryGrey = Color(0xFF778873);
+
     return Scaffold(
       body: Stack(
         children: [
+          // Background Dekorasi
           Positioned(
             top: -150,
             left: -150,
             child: Container(
               width: 300,
               height: 300,
-              decoration: BoxDecoration(
-                color: primaryPurple,
+              decoration: const BoxDecoration(
+                color: primaryBlue,
                 shape: BoxShape.circle,
               ),
             ),
@@ -114,17 +139,18 @@ class _RegisterPageState extends State<RegisterPage> {
             padding: const EdgeInsets.symmetric(horizontal: 30),
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.10),
-              SizedBox(
+              Center(
                 child: Image.asset(
                   "assets/logo/treatmyshoes.png",
                   width: 100,
                   height: 100,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.image, size: 100),
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-              //Teks
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
               const Text(
-                'Sign Up',
+                'Buat Akun',
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
@@ -139,16 +165,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(color: Colors.grey),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => LoginPage()),
-                      );
-                    },
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                    ),
                     child: const Text(
                       'Masuk',
                       style: TextStyle(
-                        color: primaryPurple,
+                        color: primaryBlue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -156,110 +180,67 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
               ),
               const SizedBox(height: 40),
+
               // Input Email
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: primaryPurple2),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryPurple, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: primaryPurple2,
-                      width: 1,
-                    ),
-                  ),
+                decoration: _buildInputDecoration(
+                  "Email",
+                  Icons.email_outlined,
+                  primaryBlue,
+                  primaryGrey,
                 ),
               ),
 
-              SizedBox(height: 8),
+              const SizedBox(height: 15),
 
-              // Input password
+              // Input Password
               TextField(
                 controller: _passwordController,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscured ? Icons.visibility_off : Icons.visibility,
-                      color: const Color(0xFF778873),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
-                  ),
-                  labelStyle: TextStyle(color: primaryPurple2),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryPurple, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: primaryPurple2,
-                      width: 1,
-                    ),
-                  ),
+                obscureText: _isObscured, // Memperbaiki bug sebelumnya
+                decoration: _buildInputDecoration(
+                  "Password",
+                  Icons.lock_outline,
+                  primaryBlue,
+                  primaryGrey,
+                  isPassword: true,
+                  isObscured: _isObscured,
+                  onToggle: () => setState(() => _isObscured = !_isObscured),
                 ),
               ),
 
-              SizedBox(height: 8),
-              // Password
+              const SizedBox(height: 15),
+
+              // Input Konfirmasi Password
               TextField(
                 controller: _confirmPasswordController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Konfirmasi Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isConfirmObscured
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: const Color(0xFF778873),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isConfirmObscured = !_isConfirmObscured;
-                      });
-                    },
-                  ),
-                  labelStyle: TextStyle(color: primaryPurple2),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryPurple, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: primaryPurple2,
-                      width: 1,
-                    ),
-                  ),
+                obscureText: _isConfirmObscured, // Memperbaiki bug sebelumnya
+                decoration: _buildInputDecoration(
+                  "Konfirmasi Password",
+                  Icons.lock_clock_outlined,
+                  primaryBlue,
+                  primaryGrey,
+                  isPassword: true,
+                  isObscured: _isConfirmObscured,
+                  onToggle: () =>
+                      setState(() => _isConfirmObscured = !_isConfirmObscured),
                 ),
               ),
 
-              SizedBox(height: 12),
+              const SizedBox(height: 30),
 
               // Tombol Sign Up
-              // Ganti ElevatedButton lama dengan ini:
               ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : signUp, // Disable tombol saat loading
+                onPressed: _isLoading ? null : signUp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  elevation: 2,
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -271,13 +252,50 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       )
                     : const Text(
-                        'Sign Up',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+                        'Buat Akun',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Helper Dekorasi Input agar kode lebih bersih
+  InputDecoration _buildInputDecoration(
+    String label,
+    IconData icon,
+    Color primary,
+    Color grey, {
+    bool isPassword = false,
+    bool? isObscured,
+    VoidCallback? onToggle,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: grey),
+      suffixIcon: isPassword
+          ? IconButton(
+              icon: Icon(
+                isObscured! ? Icons.visibility_off : Icons.visibility,
+                color: grey,
+              ),
+              onPressed: onToggle,
+            )
+          : null,
+      labelStyle: TextStyle(color: grey),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: primary, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: grey.withOpacity(0.5), width: 1),
       ),
     );
   }

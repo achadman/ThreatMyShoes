@@ -24,7 +24,7 @@ class InlineCalendar extends StatelessWidget {
     return Column(
       children: [
         const Text(
-          "Pilih Tanggal Penjemputan",
+          "Pilih Tanggal",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         const SizedBox(height: 10),

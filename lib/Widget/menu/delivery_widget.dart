@@ -19,7 +19,7 @@ class DeliveryWidget extends StatelessWidget {
 
   Future<void> _openMap() async {
     const String googleMapsUrl =
-        "https://www.google.com/maps/search/?api=1&query=TreatMyShoes+Bandung";
+        "https://maps.app.goo.gl/nhcBpkfCXbv9rw2N8?g_st=aw";
     if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
       await launchUrl(
         Uri.parse(googleMapsUrl),
@@ -87,7 +87,9 @@ class DeliveryWidget extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xff0096C9).withOpacity(0.1) : Colors.white,
+          color: isSelected
+              ? const Color(0xff0096C9).withOpacity(0.1)
+              : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? const Color(0xff0096C9) : Colors.grey.shade300,
@@ -134,7 +136,7 @@ class DeliveryWidget extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           const Text(
-            "Jl. Angin Topan No. 123, Bandung",
+            "Jl. Terusan pasir koja, Gg.Rahayu 2 No.93/91, Cibadak, Kec. Astanaanyar, Kota Bandung, Jawa Barat",
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
             textAlign: TextAlign.center,
           ),
@@ -146,10 +148,15 @@ class DeliveryWidget extends StatelessWidget {
               foregroundColor: Colors.blue,
               elevation: 0,
               side: const BorderSide(color: Colors.blue),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             icon: const Icon(Icons.location_on, size: 18),
-            label: const Text("Google Maps (TreatMyShoes)", style: TextStyle(fontSize: 12)),
+            label: const Text(
+              "Google Maps (TreatMyShoes)",
+              style: TextStyle(fontSize: 12),
+            ),
           ),
         ],
       ),
@@ -162,10 +169,14 @@ class DeliveryWidget extends StatelessWidget {
       children: [
         const Text(
           "Detail Penjemputan",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
         ),
         const SizedBox(height: 12),
-        // Alamat sudah otomatis dari profile di file utama, 
+        // Alamat sudah otomatis dari profile di file utama,
         // widget ini hanya menangani jarak untuk ongkir
         TextField(
           keyboardType: TextInputType.number,
@@ -175,7 +186,10 @@ class DeliveryWidget extends StatelessWidget {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             suffixText: "KM",
             helperText: "Gratis ongkir < 2 KM. Selanjutnya 5rb/KM",
-            helperStyle: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+            helperStyle: const TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           onChanged: (val) {
             double dist = double.tryParse(val) ?? 0;

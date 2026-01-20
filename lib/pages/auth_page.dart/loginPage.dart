@@ -128,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.1),
               const Text(
-                'Login',
+                'Masuk Akun',
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
@@ -150,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     },
                     child: const Text(
-                      'sign up',
+                      'Buat akun',
                       style: TextStyle(
                         color: primaryPurple,
                         fontWeight: FontWeight.bold,
@@ -230,7 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   child: const Text(
-                    'Login',
+                    'Masuk',
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
