@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter03/pages/Pesanan/history_pages.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter03/pages/auth_page.dart/loginPage.dart';
 import 'package:flutter03/pages/user/crudProfile.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -26,6 +27,28 @@ class _ProfilePageState extends State<ProfilePage> {
     _getProfileData();
   }
 
+  // ================= CONTACT ADMIN (WHATSAPP) =================
+  Future<void> contactAdmin() async {
+    const String phoneNumber = "6283121782648";
+    const String message =
+        "Halo Admin TreatMyShoes, saya ingin menanyakan tentang layanan laundry sepatu.\n\nTerima kasih.";
+
+    final Uri whatsappUri = Uri.parse(
+      "https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}",
+    );
+
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("WhatsApp tidak tersedia")),
+        );
+      }
+    }
+  }
+
+  // ================= GET PROFILE =================
   Future<void> _getProfileData() async {
     try {
       final userId = supabase.auth.currentUser!.id;
@@ -45,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // LOGOUT DENGAN KONFIRMASI
+  // ================= LOGOUT =================
   void signOut() {
     showDialog(
       context: context,
@@ -92,7 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          // HEADER PROFIL
+          // ================= HEADER =================
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(top: 70, bottom: 40),
@@ -155,7 +178,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 30),
 
-          // MENU
+          // ================= MENU =================
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -193,10 +216,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   subtitle: "Hubungi kami jika ada kendala",
                   icon: Icons.help_outline_rounded,
                   iconColor: Colors.green,
-                  onTap: () {},
+                  onTap: contactAdmin, // 🔥 LANGSUNG KE WA
                 ),
                 const SizedBox(height: 20),
-                const Divider(thickness: 1, indent: 10, endIndent: 10),
+                const Divider(thickness: 1),
                 const SizedBox(height: 10),
                 _buildMenuTile(
                   title: "Log Out",
@@ -214,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // WIDGET MENU
+  // ================= MENU TILE =================
   Widget _buildMenuTile({
     required String title,
     required String subtitle,

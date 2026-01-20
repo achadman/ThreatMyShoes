@@ -95,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryPurple = Color(0xFF24465F);
+    const Color primaryPurple = Colors.blue;
     const Color primaryPurple2 = Color(0xFF778873);
 
     return Scaffold(
